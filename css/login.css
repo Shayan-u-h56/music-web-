@@ -221,7 +221,9 @@ body{
 }
 
 body{
+    position: relative;
     background-color: #121212;
+    /* background-color: wheat; */
     background: linear-gradient(to bottom, #1a1a1a, #121212);
     display: flex;
     align-items: center;
@@ -239,6 +241,20 @@ body{
     width: 768px;
     max-width: 100%;
     min-height: 480px;
+}
+.alert{
+    position: absolute;
+    top: 0;
+    width: 99%;
+    left: 11;
+    text-align: center;
+    font-size: 15px;
+    background: rgba(255, 77, 77, 0.15);
+    border: 1px solid #ff4d4d;
+    color: #ff6b6b;
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-weight: bold;
 }
 
 .container p{

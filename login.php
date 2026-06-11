@@ -1,5 +1,6 @@
 <?php include('connection.php');
 $login = false;
+$error = "";
 if (isset($_POST['sigin'])) {
     $name = $_POST['uname'];
     $email = $_POST['uemail'];
@@ -9,7 +10,7 @@ if (isset($_POST['sigin'])) {
     $checkemail = "SELECT * FROM userdetails WHERE u_email='$email'";
     $checkquery = mysqli_query($conn, $checkemail);
     if (mysqli_num_rows($checkquery) > 0) {
-        echo 'user already esist';
+        $error= 'user already esist';
     } else {
         // $sql = "INSERT INTO userdetails(u_name,u_email,u_pass) VALUES ('$name','$email','$hash')";
         // $result = mysqli_query($conn, $sql);
@@ -36,7 +37,7 @@ if (isset($_POST['login'])) {
         if ($verifypass) {
             session_start();
             $_SESSION['loginedin'] = true;
-        
+
             $_SESSION['loginemail'] = $email;
             $_SESSION['user_id'] = $userdata['id'];
             $_SESSION['rol_id'] = $userdata['rol_id'];
@@ -48,11 +49,10 @@ if (isset($_POST['login'])) {
                 exit();
             }
         } else {
-
-            echo "incorrect passwprd";
+            $error ="incorrect passwprd";
         }
     } else {
-        echo "user dosnot exist sigin first";
+        $error ="user dosnot exist sigin first";
     }
 }
 ?>;
@@ -64,12 +64,19 @@ if (isset($_POST['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="css/login.css">
+    <link rel="stylesheet" href="css/utility.css">
 
     <title>Modern Login Page | AsmrProg</title>
 </head>
 
 <body>
 
+
+    <?php if (!empty($error)) { ?>
+        <div class="alert">
+            <?php echo $error; ?>
+        </div>
+    <?php } ?>
     <div class="container" id="container">
         <div class="form-container sign-up">
             <form action="" method="post">
