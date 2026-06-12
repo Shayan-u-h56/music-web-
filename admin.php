@@ -1,149 +1,282 @@
 <?php
 session_start();
 include("connection.php");
+
+// Admin check
 if ($_SESSION['rol_id'] != 2) {
     header("Location: index.php");
     exit();
 }
-
+// Users list
 if (isset($_GET['search'])) {
-    $search = $_GET['search'];
-    $sql = "SELECT * from userdetails where u_name like '%$search%'";
+    $search   = $_GET['search'];
+    $usersRes = mysqli_query($conn, "SELECT * FROM userdetails WHERE u_name LIKE '%$search%'");
 } else {
-    $sql = "SELECT * FROM userdetails";
+    $usersRes = mysqli_query($conn, "SELECT * FROM userdetails");
 }
-$result = mysqli_query($conn, $sql);
-if (isset($_GET['msg'])) {
-    if ($_GET['msg'] == "update") {
-        echo "<div class='alert alert-success'>User Update Succssfully</div>";
-    };
 
-    if ($_GET['msg'] == "delete") {
-        echo "<div class='alert alert-danger'>User delete Succssfully</div>";
-    }
+// Active section
+$section = isset($_GET['section']) ? $_GET['section'] : 'songs';
+
+// Song delete
+if (isset($_GET['delete_song'])) {
+    $songId = $_GET['delete_song'];
+    mysqli_query($conn, "DELETE FROM songs WHERE id = $songId");
+    header("Location: admin.php?section=songs&msg=song_deleted");
+    exit();
 }
+
+// Song add
+if (isset($_POST['add_song'])) {
+    $title     = $_POST['title'];
+    $artist_id = $_POST['artist_id'];
+
+    // Artist name artists table se lo
+    $aRes    = mysqli_query($conn, "SELECT name FROM artists WHERE id = $artist_id");
+    $aRow    = mysqli_fetch_assoc($aRes);
+    $artist  = $aRow['name'];
+
+    // Files upload
+    $cover = $_FILES['cover_image']['name'];
+    $audio = $_FILES['audio_file']['name'];
+    move_uploaded_file($_FILES['cover_image']['tmp_name'], "img/covers/$cover");
+    move_uploaded_file($_FILES['audio_file']['tmp_name'], "songs/$audio");
+
+    mysqli_query($conn, "INSERT INTO songs (title, artist, artist_id, cover_image, audio_file) VALUES ('$title', '$artist', $artist_id, '$cover', '$audio')");
+    header("Location: admin.php?section=songs&msg=song_added");
+    exit();
+}
+
+// Songs list
+$songsRes  = mysqli_query($conn, "SELECT * FROM songs");
+$songsList = mysqli_fetch_all($songsRes, MYSQLI_ASSOC);
+
+// Artists dropdown ke liye
+$artistsRes  = mysqli_query($conn, "SELECT * FROM artists");
+$artistsList = mysqli_fetch_all($artistsRes, MYSQLI_ASSOC);
+
 
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <meta name="Description" content="Enter your description here" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.0/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/login.css">
-    <title>Title</title>
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="css/admin.css">
 </head>
 
-
 <body>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">Navbar</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" aria-current="page" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">Link</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Dropdown
-                        </a>
-                        <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <li><a class="dropdown-item" href="#">Action</a></li>
-                            <li><a class="dropdown-item" href="#">Another action</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><a class="dropdown-item" href="#">Something else here</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
-                    </li>
-                </ul>
-                <form class="d-flex">
-                    <input class="form-control" name="search" type="search " placeholder="Search" aria-label="Search">
-                    <button class="btn btn-outline-success me-4 px-4" type="submit">Search</button>
-                    <a href="add.php" class="btn btn-outline-success me-4 px-4" type="submit">+ADD</a>
-                    <ul>
 
-                        <?php if (isset($_SESSION['loginedin'])) { ?>
+    <div class="admin-layout">
 
-                            <li>
-                                <?php echo $_SESSION['loginemail']; ?>
-                            </li>
-
-                            <li>
-                                <a href="logout.php">Logout</a>
-                            </li>
-
-                        <?php }  ?>
-
-
-
-                    </ul>
-
-                </form>
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <div class="admin-brand">
+                <svg viewBox="0 0 32 32" fill="none" width="26" height="26">
+                    <circle cx="16" cy="16" r="15" fill="#1db954" />
+                    <circle cx="16" cy="16" r="7" fill="#000" opacity="0.55" />
+                    <circle cx="16" cy="16" r="3" fill="#1db954" />
+                    <line x1="16" y1="1" x2="16" y2="9" stroke="#000" stroke-width="2.5" />
+                </svg>
+                Music<span>Admin</span>
             </div>
-        </div>
-    </nav>
-    <h1 class="text-center">admin panel</h1>
 
-    <table class="table ">
-        <thead>
-            <tr>
-                <th>id</th>
-                <th>role id</th>
-                <th>name</th>
-                <th>email</th>
-                <th>created_at</th>
-                <th>update_at</th>
-                <th>UPDATE & DELETE</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php
-            while ($row = mysqli_fetch_assoc($result)) {
-            ?>
-                <tr>
-                    <td><?php echo $row['id'] ?></td>
-                    <td><?php echo $row['rol_id'] ?></td>
-                    <td><?php echo $row['u_name'] ?></td>
-                    <td><?php echo $row['u_email'] ?></td>
-                    <td><?php echo $row['created_at'] ?></td>
-                    <td><?php echo $row['update_at'] ?></td>
+            <nav class="admin-nav">
+                <a href="admin.php?section=songs" class="admin-nav-item <?php if ($section == 'songs') echo 'active'; ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M9 18V5l12-2v13" />
+                        <circle cx="6" cy="18" r="3" />
+                        <circle cx="18" cy="16" r="3" />
+                    </svg>
+                    Songs
+                </a>
+                <a href="admin.php?section=users" class="admin-nav-item <?php if ($section == 'users') echo 'active'; ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                    </svg>
+                    Users
+                </a>
+            </nav>
 
+            <div class="admin-sidebar-bottom">
+                <?php if (isset($_SESSION['loginedin'])) { ?>
+                    <div class="admin-user-info">
+                        <div class="admin-user-avatar">
+                            <?php echo strtoupper(substr($_SESSION['loginemail'], 0, 1)); ?>
+                        </div>
+                        <div class="admin-user-email"><?php echo $_SESSION['loginemail']; ?></div>
+                    </div>
+                    <a href="logout.php" class="btn-logout">Logout</a>
+                    <a href="index.php" class="btn-home">← Back to Site</a>
+                <?php } ?>
+            </div>
+        </aside>
 
-                    <td>
-                        <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn btn-warning p-1">UPDATE</a>
-                        <?php
-                        if ($_SESSION['user_id'] != $row['id']) { ?>
-                            <a href="delete.php?id=<?php echo $row['id']; ?>" class="btn btn-danger p-1" onclick="return confirm('Are You Sure?')">DELETE</a>
-                        <?php } ?>
-                    </td>
+        <!-- MAIN -->
+        <main class="admin-main">
 
-                </tr>
+            <!-- TOPBAR -->
+            <div class="admin-topbar">
+                <div class="admin-page-title">
+                    <?php if ($section == 'songs') {
+                        echo '🎵 Songs';
+                    } else {
+                        echo '👥 Users';
+                    } ?>
+                </div>
+                <?php if ($section == 'users') { ?>
+                    <form action="" method="get" class="admin-search-form">
+                        <input type="hidden" name="section" value="users">
+                        <input class="admin-search" name="search" type="search"
+                            placeholder="Search users..."
+                            value="<?php echo isset($_GET['search']) ? $_GET['search'] : ''; ?>">
+                        <button class="btn-search" type="submit">Search</button>
+                    </form>
+                <?php } ?>
+            </div>
 
+            <!-- ALERTS -->
+            <?php if (isset($_GET['msg'])) { ?>
+                <?php if ($_GET['msg'] == 'song_added') { ?>
+                    <div class="admin-alert success">✓ Song added successfully!</div>
+                <?php } ?>
+                <?php if ($_GET['msg'] == 'song_deleted') { ?>
+                    <div class="admin-alert danger">✓ Song deleted!</div>
+                <?php } ?>
+                <?php if ($_GET['msg'] == 'update') { ?>
+                    <div class="admin-alert success">✓ User updated successfully!</div>
+                <?php } ?>
+                <?php if ($_GET['msg'] == 'delete') { ?>
+                    <div class="admin-alert danger">✓ User deleted!</div>
+                <?php } ?>
+            <?php } ?>
+
+            <!-- SONGS SECTION -->
+            <?php if ($section == 'songs') { ?>
+
+                <!-- ADD FORM -->
+                <div class="admin-card">
+                    <div class="admin-card-title">➕ Add New Song</div>
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="song-form-grid">
+                            <div class="form-group">
+                                <label>Song Title</label>
+                                <input type="text" name="title" placeholder="Enter song title" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Artist</label>
+                                <select name="artist_id" required>
+                                    <option value="">Select Artist</option>
+                                    <?php foreach ($artistsList as $a) { ?>
+                                        <option value="<?php echo $a['id']; ?>"><?php echo $a['name']; ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Cover Image</label>
+                                <input type="file" name="cover_image" accept="image/*" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Audio File</label>
+                                <input type="file" name="audio_file" accept="audio/*" required>
+                            </div>
+                        </div>
+                        <button type="submit" name="add_song" class="btn-add">Add Song</button>
+                    </form>
+                </div>
+
+                <!-- SONGS LIST -->
+                <div class="admin-card">
+                    <div class="admin-card-title">🎵 All Songs</div>
+                    <div class="table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cover</th>
+                                    <th>Title</th>
+                                    <th>Artist</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($songsList as $song) { ?>
+                                    <tr>
+                                        <td><?php echo $song['id']; ?></td>
+                                        <td>
+                                            <img src="img/covers/<?php echo $song['cover_image']; ?>"
+                                                style="width:42px;height:42px;border-radius:6px;object-fit:cover;">
+                                        </td>
+                                        <td><?php echo $song['title']; ?></td>
+                                        <td><?php echo $song['artist']; ?></td>
+                                        <td>
+                                            <a href="admin.php?section=songs&delete_song=<?php echo $song['id']; ?>"
+                                                class="btn-delete"
+                                                onclick="return confirm('Delete this song?')">Delete</a>
+                                        </td>
+                                    </tr>
+                                <?php } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
             <?php } ?>
 
+            <!-- USERS SECTION -->
+            <?php if ($section == 'users') { ?>
+                <div class="admin-card">
+                    <div class="admin-card-title">👥 All Users</div>
+                    <div class="table-wrap">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Role</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Created</th>
+                                    <th>Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php while ($row = mysqli_fetch_assoc($usersRes)) { ?>
+                                    <tr>
+                                        <td><?php echo $row['id']; ?></td>
+                                        <td>
+                                            <?php if ($row['rol_id'] == 2) { ?>
+                                                <span class="badge-admin">Admin</span>
+                                            <?php } else { ?>
+                                                <span class="badge-user">User</span>
+                                            <?php } ?>
+                                        </td>
+                                        <td><?php echo $row['u_name']; ?></td>
+                                        <td><?php echo $row['u_email']; ?></td>
+                                        <td><?php echo $row['created_at']; ?></td>
+                                        <td><?php echo $row['update_at']; ?></td>
+                                        <td>
+                                            <a href="edit.php?id=<?php echo $row['id']; ?>" class="btn-edit">Edit</a>
+                                            <?php if ($_SESSION['user_id'] != $row['id']) { ?>
+                                                <a href="delete.php?id=<?php echo $row['id']; ?>"
+                                                    class="btn-delete"
+                                                    onclick="return confirm('Are you sure?')">Delete</a>
+                                            <?php } ?>
+                                        </td>
+                                    </tr>
+                                <?php } ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <?php } ?>
 
+        </main>
+    </div>
 
-        </tbody>
-    </table>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.2/umd/popper.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.0/js/bootstrap.min.js"></script>
 </body>
 
 </html>

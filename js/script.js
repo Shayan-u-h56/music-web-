@@ -28,20 +28,19 @@ function loadSong(card, index) {
     const cover = card.dataset.cover;
     const audioFile = card.dataset.audio;
 
-    // Hero Section
-    document.getElementById("hero-title").textContent = title;
-    document.getElementById("hero-img").src = cover;
+    const heroTitle = document.getElementById("hero-title");
+    const heroImg = document.getElementById("hero-img");
 
-    // Player Section
+    if (heroTitle) heroTitle.textContent = title;
+    if (heroImg) heroImg.src = cover;
+
     document.getElementById("player-title").textContent = title;
     document.getElementById("player-artist").textContent = artist;
     document.getElementById("player-thumb").src = cover;
 
-    // Audio
     audio.src = audioFile;
     audio.play();
 }
-
 
 // NEXT SONG
 
@@ -161,9 +160,24 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
     }
-    //search
 
     // Play / Pause
+    const playIcon = document.getElementById("playIcon");
+    audio.addEventListener("play", function () {
+
+        playIcon.innerHTML = `
+        <rect x="6" y="4" width="4" height="16"></rect>
+        <rect x="14" y="4" width="4" height="16"></rect>
+    `;
+
+    });
+    audio.addEventListener("pause", function () {
+
+        playIcon.innerHTML = `
+        <polygon points="5 3 19 12 5 21"></polygon>
+    `;
+
+    });
     const playBtn = document.getElementById("playMainBtn");
 
     if (playBtn) {
@@ -194,16 +208,43 @@ document.addEventListener("DOMContentLoaded", function () {
         prevBtn.addEventListener("click", prevSong);
     }
 
-    document.getElementById('volSlider').addEventListener('input', function () {
-        isMuted = (parseInt(this.value) === 0);
-        document.getElementById('muteBtn').style.color = isMuted ? '#555' : '';
-    });
+    //volume
+   const muteBtn = document.getElementById("muteBtn");
+const volSlider = document.getElementById("volSlider");
 
-    document.getElementById('muteBtn').addEventListener('click', function () {
-        isMuted = !isMuted;
-        document.getElementById('volSlider').value = isMuted ? 0 : 80;
-        this.style.color = isMuted ? '#555' : '';
-    });
+let lastVolume = 100;
+
+muteBtn.addEventListener("click", function () {
+
+    if (audio.muted || audio.volume === 0) {
+
+        audio.muted = false;
+        audio.volume = lastVolume / 100;
+        volSlider.value = lastVolume;
+
+    } else {
+
+        lastVolume = volSlider.value;
+        audio.muted = true;
+        volSlider.value = 0;
+        audio.volume = 0;
+
+    }
+
+});
+
+volSlider.addEventListener("input", function () {
+
+    audio.volume = this.value / 100;
+
+    if (this.value == 0) {
+        audio.muted = true;
+    } else {
+        audio.muted = false;
+        lastVolume = this.value;
+    }
+
+});
     // Progress Click
     const progressBar = document.getElementById("progressBar");
 
@@ -292,11 +333,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const firstCard = cards[0];
 
-        document.getElementById("hero-title").textContent =
-            firstCard.dataset.title;
+        const heroTitle = document.getElementById("hero-title");
+        const heroImg = document.getElementById("hero-img");
 
-        document.getElementById("hero-img").src =
-            firstCard.dataset.cover;
+        if (heroTitle) {
+            heroTitle.textContent = firstCard.dataset.title;
+        }
+
+        if (heroImg) {
+            heroImg.src = firstCard.dataset.cover;
+        }
 
         document.getElementById("player-title").textContent =
             firstCard.dataset.title;

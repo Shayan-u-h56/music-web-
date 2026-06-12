@@ -271,7 +271,9 @@ body {
   align-items: center;
   gap: 12px;
 }
-
+.top-left a{
+  text-decoration: none;
+}
 .hamburger {
   background: none;
   border: none;
@@ -689,7 +691,9 @@ body {
 }
 
 /* ARTIST CARDS */
-
+.artists-scroll a{
+  text-decoration: none;
+}
 .artists-scroll {
   display: flex;
   gap: 16px;

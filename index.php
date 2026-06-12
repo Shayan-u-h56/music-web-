@@ -2,11 +2,18 @@
 include("connection.php");
 session_start();
 //serach
-$q = isset($_GET['q']) ? trim($_GET['q']) : '';
+// $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
-if ($q !== '') {
-  $qSafe = mysqli_real_escape_string($conn, $q);
-  $sql   = "SELECT * FROM songs WHERE title LIKE '%$qSafe%' OR artist LIKE '%$qSafe%'";
+// if ($q !== '') {
+//   $qSafe = mysqli_real_escape_string($conn, $q);
+//   $sql   = "SELECT * FROM songs WHERE title LIKE '%$qSafe%' OR artist LIKE '%$qSafe%'";
+// } else {
+//   $sql = "SELECT * FROM songs";
+// }
+if (isset($_GET['q'])) {
+  $q = trim($_GET['q']);
+  $sql   = "SELECT * FROM songs WHERE title LIKE '%$q%' OR artist LIKE '%$q%'";
+  $result = mysqli_real_escape_string($conn, $sql);
 } else {
   $sql = "SELECT * FROM songs";
 }
@@ -20,18 +27,20 @@ $result  = mysqli_query($conn, "SELECT * FROM artists");
 $artists = mysqli_fetch_all($result, MYSQLI_ASSOC);
 mysqli_free_result($result);
 // getreview
-$song_id = $firstTrack['id'];
-$stmt = $conn->prepare("
+if ($firstTrack) {
+  $song_id = $firstTrack['id'];
+  $stmt = $conn->prepare("
     SELECT r.*, u.u_name
     FROM reviews r
     JOIN userdetails u ON r.user_id = u.id
     WHERE r.song_id = ?
     ORDER BY r.id DESC
 ");
-$stmt->bind_param("i", $song_id);
-$stmt->execute();
+  $stmt->bind_param("i", $song_id);
+  $stmt->execute();
 
-$result = $stmt->get_result();
+  $result = $stmt->get_result();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -125,7 +134,9 @@ $result = $stmt->get_result();
           <div class="main-nav" id="mainNav">
             <div class="main-tab active" data-tab="discover">Discover</div>
             <div class="main-tab" data-tab="library">Library</div>
-            <div class="main-tab" data-tab="radio">Radio</div>
+            <a href="#">
+              <div class="main-tab" data-tab="artists">Albums</div>
+            </a>
           </div>
         </div>
         <div class="top-right">
@@ -157,16 +168,23 @@ $result = $stmt->get_result();
       <!-- HERO -->
       <div class="hero">
 
-        <img class="hero-bg" id="hero-img" loading="eager" fetchpriority="high"
-          src="img/covers/<?= $firstTrack['cover_image'] ?>" alt="">
-        <div class="hero-content">
-          <div class="hero-title" id="hero-title"><?= $firstTrack['title'] ?></div>
-          <div class="hero-desc" id="hero-desc"><?= $firstTrack['artist'] ?></div>
-          <div class="hero-btns">
-            <button class="btn-play" id="heroPlayBtn">▶ PLAY</button>
-            <button class="btn-follow" id="heroFollowBtn">FOLLOW</button>
+        <?php if ($firstTrack) { ?>
+          <img class="hero-bg" id="hero-img" loading="eager" fetchpriority="high"
+            src="img/covers/<?= $firstTrack['cover_image'] ?>" alt="">
+          <div class="hero-content">
+            <div class="hero-title" id="hero-title"><?= $firstTrack['title'] ?></div>
+            <div class="hero-desc" id="hero-desc"><?= $firstTrack['artist'] ?></div>
+            <div class="hero-btns">
+              <button class="btn-play" id="heroPlayBtn">▶ PLAY</button>
+              <button class="btn-follow" id="heroFollowBtn">FOLLOW</button>
+            </div>
           </div>
-        </div>
+        <?php } else { ?>
+          <div class="hero-content">
+            <div class="hero-title">No results found</div>
+            <div class="hero-desc">Try searching something else</div>
+          </div>
+        <?php } ?>
       </div>
 
       <!-- POPULAR SONGS -->
@@ -215,12 +233,14 @@ $result = $stmt->get_result();
         </div>
         <div class="artists-scroll" id="artistsRow">
           <?php foreach ($artists as $artist) { ?>
-            <div class="artist-card">
-              <div class="artist-circle">
-                <img loading="lazy" src="img/artists/<?= $artist['image'] ?>" alt="">
+            <a href="artist.php?id=<?= $artist['id'] ?>">
+              <div class="artist-card">
+                <div class="artist-circle">
+                  <img loading="lazy" src="img/artists/<?= $artist['image'] ?>" alt="">
+                </div>
+                <div class="artist-name"><?= $artist['name'] ?></div>
               </div>
-              <div class="artist-name"><?= $artist['name'] ?></div>
-            </div>
+            </a>
           <?php } ?>
         </div>
       </div>
@@ -283,7 +303,8 @@ $result = $stmt->get_result();
         <?php } ?>
       </div>
       <!-- FOOTER  -->
-      <hr class="footer-line-separator">
+      <?php include('footer.php') ?>
+      <!-- <hr class="footer-line-separator">
       <footer class="app-footer">
         <div class="footer-wrapper">
           <div class="footer-navigation">
@@ -348,7 +369,7 @@ $result = $stmt->get_result();
           </div>
           <p class="copyright-text">&copy; 2026 BrandName</p>
         </div>
-      </footer>
+      </footer> -->
     </main>
   </div>
 
