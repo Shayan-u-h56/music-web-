@@ -8,8 +8,8 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$song_id = (int)$_POST['song_id'];
-$rating = (int)$_POST['rating'];
+$song_id = $_POST['song_id'];
+$rating = $_POST['rating'];
 $review = trim($_POST['review']);
 
 $stmt = $conn->prepare("

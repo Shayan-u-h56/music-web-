@@ -16,8 +16,10 @@ if (isset($_POST['edit'])) {
     $editqurey->bind_param("ssii", $name, $email, $role, $formid);
     $editqurey->execute();
     // $result = mysqli_query($conn, $editqurey);
-    header("location:admin.php?msg=update");
-};
+    
+    header("location: admin.php?section=users&msg=update");
+
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

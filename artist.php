@@ -69,7 +69,7 @@ $firstSong = $songs[0] ?? null;
 
             <!-- Sidebar mein songs -->
             <div class="sidebar-queue" id="sidebar-tracks">
-                <?php foreach ($songs as $i => $song): ?>
+                <?php foreach ($songs as $i => $song){ ?>
                     <div class="playlist-item" data-index="<?= $i ?>">
                         <span class="playlist-num"><?= str_pad($i + 1, 2, '0', STR_PAD_LEFT) ?></span>
                         <img loading="lazy" src="img/covers/<?= $song['cover_image'] ?>" alt="">
@@ -78,7 +78,7 @@ $firstSong = $songs[0] ?? null;
                             <div class="track-artist"><?= $song['artist'] ?></div>
                         </div>
                     </div>
-                <?php endforeach; ?>
+                <?php } ?>
             </div>
         </aside>
 
@@ -98,21 +98,21 @@ $firstSong = $songs[0] ?? null;
                         <a href="index.php">
                             <div class="main-tab">Discover</div>
                         </a>
-                        <a href="index.php">
-                            <div class="main-tab">Library</div>
+                        <a href="video.php">
+                            <div class="main-tab">Videos</div>
                         </a>
                         <div class="main-tab active">Albums</div>
                     </div>
                 </div>
                 <div class="top-right">
                     <div class="auth-btns">
-                        <?php if (isset($_SESSION['loginedin'])): ?>
+                        <?php if (isset($_SESSION['loginedin'])) { ?>
                             <?= $_SESSION['loginemail'] ?>
                             <button class="btn-signup" onclick="window.location.href='logout.php'">Log Out</button>
-                        <?php else: ?>
+                        <?php } else {  ?>
                             <button class="btn-login" onclick="window.location.href='login.php'">Login</button>
                             <button class="btn-signup" onclick="window.location.href='login.php'">Sign Up</button>
-                        <?php endif; ?>
+                        <?php } ?>
                     </div>
                 </div>
             </div>
@@ -123,8 +123,8 @@ $firstSong = $songs[0] ?? null;
                 <div class="artist-hero-content">
                     <div class="artist-hero-label">Artist</div>
                     <div class="artist-hero-name"><?= $artist['name'] ?></div>
-                  
-                   
+
+
                 </div>
             </div>
 
@@ -132,7 +132,7 @@ $firstSong = $songs[0] ?? null;
             <div class="artist-songs-wrap">
                 <div class="artist-songs-title">Songs</div>
 
-                <?php foreach ($songs as $i => $song): ?>
+                <?php foreach ($songs as $i => $song){ ?>
                     <div class="artist-song-row song-card"
                         data-index="<?= $i ?>"
                         data-title="<?= $song['title'] ?>"
@@ -142,20 +142,20 @@ $firstSong = $songs[0] ?? null;
 
                         <div class="artist-song-num"><?= str_pad($i + 1, 2, '0', STR_PAD_LEFT) ?></div>
 
-                        <img loading="lazy" src="img/covers/<?= $song['cover_image'] ?>" alt="">
-
-                        <div class="artist-song-info">
+                        
+                        
+                            <img loading="lazy" src="img/covers/<?= $song['cover_image'] ?>" alt="">
                             <div class="artist-song-title"><?= $song['title'] ?></div>
                             <div class="artist-song-artist"><?= $song['artist'] ?></div>
-                        </div>
+                            <div class="artist-song-play">▶</div>
+                        
 
-                        <div class="artist-song-play">▶</div>
                     </div>
-                <?php endforeach; ?>
+                <?php } ?>
             </div>
 
             <div style="height:100px;"></div>
-               <?php include('footer.php') ?>
+            <?php include('footer.php') ?>
         </main>
     </div>
 

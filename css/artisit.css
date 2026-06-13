@@ -22,7 +22,11 @@
   z-index: 2;
   padding: 28px 20px;
 }
-
+.artist-song-info {
+  flex: 1;
+  overflow: hidden;
+  min-width: 0;  /* ye lagao — flex child ko shrink hone deta hai */
+}
 .artist-hero-label {
   font-size: 11px;
   text-transform: uppercase;
@@ -55,7 +59,9 @@
 
 .artist-songs-wrap {
   padding: 20px;
+  width: 100%;
 }
+
 
 .artist-songs-title {
   font-size: 18px;
@@ -65,14 +71,23 @@
 
 .artist-song-row {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  gap: 14px;
-  padding: 10px 12px;
-  border-radius: 8px;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+  margin-bottom: 4px;
+  width: 100%;
 }
-.artist-song-row:hover { background: var(--hover-bg); }
+
+
+.artist-song-row:hover {
+  background: var(--card-bg);
+  border-color: var(--border);
+}
 
 .artist-song-num {
   font-size: 13px;
@@ -83,31 +98,47 @@
 }
 
 .artist-song-row img {
-  width: 44px;
-  height: 44px;
-  border-radius: 6px;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
 }
 
-.artist-song-info { flex: 1; overflow: hidden; }
 
 .artist-song-title {
-  font-size: 13px;
+  flex: 1;
+  font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .artist-song-artist {
+  flex: 1;
   font-size: 12px;
   color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
+
 .artist-song-play {
-  color: var(--dim);
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-size: 13px;
   opacity: 0;
+  flex-shrink: 0;
   transition: opacity 0.2s;
 }
 .artist-song-row:hover .artist-song-play { opacity: 1; }
@@ -115,4 +146,6 @@
 @media (max-width: 480px) {
   .artist-hero-name { font-size: 28px; }
   .artist-hero { height: 220px; }
+  .artist-song-row { padding: 10px 12px; gap: 12px; }
+  .artist-song-row img { width: 44px; height: 44px; }
 }

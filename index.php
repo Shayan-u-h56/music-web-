@@ -1,22 +1,17 @@
 <?php
 include("connection.php");
 session_start();
-//serach
-// $q = isset($_GET['q']) ? trim($_GET['q']) : '';
 
-// if ($q !== '') {
-//   $qSafe = mysqli_real_escape_string($conn, $q);
-//   $sql   = "SELECT * FROM songs WHERE title LIKE '%$qSafe%' OR artist LIKE '%$qSafe%'";
-// } else {
-//   $sql = "SELECT * FROM songs";
-// }
-if (isset($_GET['q'])) {
-  $q = trim($_GET['q']);
-  $sql   = "SELECT * FROM songs WHERE title LIKE '%$q%' OR artist LIKE '%$q%'";
-  $result = mysqli_real_escape_string($conn, $sql);
+//serach
+$search = isset($_GET['search']) ? trim($_GET['search']) : '';
+
+if ($search !== '') {
+  $sql   = "SELECT * FROM songs WHERE title LIKE '%$search%' OR artist LIKE '%$search%'";
+  $qSafe = mysqli_query($conn, $sql);
 } else {
   $sql = "SELECT * FROM songs";
 }
+
 // cards
 $result     = mysqli_query($conn, $sql);
 $tracks     = mysqli_fetch_all($result, MYSQLI_ASSOC);
@@ -38,7 +33,6 @@ if ($firstTrack) {
 ");
   $stmt->bind_param("i", $song_id);
   $stmt->execute();
-
   $result = $stmt->get_result();
 }
 ?>
@@ -106,7 +100,7 @@ if ($firstTrack) {
       <div class="sidebar-section">Queue</div>
 
       <div class="sidebar-queue" id="sidebar-tracks">
-        <?php foreach (array_slice($tracks, 0, 6) as $i => $track) { ?>
+        <?php foreach ($tracks as $i => $track) { ?>
           <div class="playlist-item" data-index="<?= $i ?>">
             <span class="playlist-num"><?= str_pad($i + 1, 2, '0', STR_PAD_LEFT) ?></span>
             <img loading="lazy" src="img/covers/<?= $track['cover_image'] ?>" alt="">
@@ -133,7 +127,9 @@ if ($firstTrack) {
           </button>
           <div class="main-nav" id="mainNav">
             <div class="main-tab active" data-tab="discover">Discover</div>
-            <div class="main-tab" data-tab="library">Library</div>
+            <a href="video.php">
+              <div class="main-tab" data-tab="library">Videos</div>
+            </a>
             <a href="#">
               <div class="main-tab" data-tab="artists">Albums</div>
             </a>
@@ -146,16 +142,16 @@ if ($firstTrack) {
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
             <form action="" method="get">
-              <input class="search-input" id="searchInput" name="q" type="search"
+              <input class="search-input" id="searchInput" name="search" type="search"
                 placeholder="Search..."
-                value="<?= $q ?>">
+                value="<?= $search ?>">
             </form>
             <div class="search-dropdown" id="searchDrop"></div>
           </div>
           <div class="auth-btns" id="authBtns">
             <?php if (isset($_SESSION['loginedin'])) { ?>
               <?= $_SESSION['loginemail'] ?>
-              <button class="btn-signup" onclick="window.location.href='logout.php'">log out</button>
+              <button class="btn-signup" onclick="window.location.href='logout.php'">Log out</button>
             <?php } else { ?>
               <button class="btn-login" id="btnLogin" onclick="window.location.href='login.php'">Login</button>
               <button class="btn-signup" id="btnSignup" onclick="window.location.href='login.php'">Sign Up</button>
@@ -253,8 +249,7 @@ if ($firstTrack) {
 
         <form method="POST" action="sumit_review.php">
 
-          <input type="hidden" name="song_id" value="<?= $firstTrack['id'] ?>">
-
+          <input type="hidden" name="song_id" value="<?= $firstTrack ? $firstTrack['id'] : 0 ?>">
           <select name="rating" required>
             <option value="">Select Rating</option>
             <option value="5">⭐⭐⭐⭐⭐</option>
